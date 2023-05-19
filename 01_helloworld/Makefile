@@ -1,22 +1,22 @@
 OS = myos
 
 # tools
-AR = arm-none-eabi-ar
-AS = arm-none-eabi-as
-CC = arm-none-eabi-gcc
-LD = arm-none-eabi-ld
-OBJCOPY = arm-none-eabi-objcopy
-OBJDUMP = arm-none-eabi-objdump
+AR = aarch64-linux-gnu-ar
+AS = aarch64-linux-gnu-as
+CC = aarch64-linux-gnu-gcc
+LD = aarch64-linux-gnu-ld
+OBJCOPY = aarch64-linux-gnu-objcopy
+OBJDUMP = aarch64-linux-gnu-objdump
 
-CPU = arm926ej-s
-ARCH_QEMU_FLAGS = -M versatilepb -cpu arm926 -m 256M
+CPU = cortex-a53
+ARCH_QEMU_FLAGS = -M virt -cpu cortex-a53 -m 256M
 
 # don't get pulseaudio related errors when qemu starts
 export QEMU_AUDIO_DRV = none
 
 # flags
-CFLAGS = -mcpu=$(CPU) -gstabs -marm \
-         -std=c99 -pedantic -Wall -Wextra -msoft-float -fPIC -mapcs-frame \
+CFLAGS = -mcpu=$(CPU)   \
+         -std=c99 -pedantic -Wall -Wextra  -fPIC  \
          -fno-builtin-printf -fno-builtin-strcpy -Wno-overlength-strings \
          -fno-builtin-exit
 ASFLAGS = -mcpu=$(CPU) -g 
@@ -34,7 +34,7 @@ $(OS).bin: $(OBJS) $(OS).ld
 	$(OBJDUMP) -D $(OS).elf > $(OS).asm
 
 qemu: $(OS).bin 
-	qemu-system-arm $(QEMU_FLAGS) -kernel $(OS).bin
+	qemu-system-aarch64 $(QEMU_FLAGS) -kernel $(OS).elf
 
 qemu2: $(OS).bin 
 	qemu-system-arm $(QEMU_FLAGS) -kernel $(OS).bin -serial vc:800x600 -serial mon:stdio
