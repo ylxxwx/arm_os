@@ -30,3 +30,8 @@ $ 	qemu-system-arm $(QEMU_FLAGS) -kernel $(OS).bin -serial vc:800x600 -serial mo
 
 versatilepb arm926 loads the kernel to physical address 0x10000.
 So in myos.ld, the base address is set to 0x10000.
+
+
+```shell
+qemu-system-aarch64 -smp 2 -M virt -m 1024 -cpu cortex-a53  -kernel Image -append 'root=/dev/vda console=ttyAMA0' -drive if=none,file=minrootfs.ext3,id=hd0 -device virtio-blk-device,drive=hd0  -netdev user,id=mynet -device virtio-net-pci,netdev=mynet -nographic
+```
