@@ -29,7 +29,7 @@ ssize_t lll_write(struct file *file, const char __user *user, size_t size, loff_
 
 int lll_open(struct inode *node, struct file *f)
 {
-    printk("inode name:%s, size:%d, type:%x, mode;%x \n", "unknown", node->i_size, 0xFF, node->i_mode);
+    printk("inode name:%s, size:%d, type:%x, mode;%x \n", node->name, node->i_size, 0xFF, node->i_mode);
     //  printk("file: name:%s, type:%x, mode:%x \n", "no name", f->f_type, f->f_mode);
     return 0;
 }
