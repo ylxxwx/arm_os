@@ -7,6 +7,8 @@
 
 #include <asm/io.h>
 
+#include "gpio.h"
+
 #define LLL_MAX_USER_SIZE 1024
 
 static struct proc_dir_entry *lll_proc[22];
@@ -27,9 +29,9 @@ ssize_t lll_write(struct file *file, const char __user *user, size_t size, loff_
 
 int lll_open(struct inode *node, struct file *f)
 {
-    printk("inode name:%s, size:%d, type:%x, mode;%x \n", node->i_name, node->i_size, node->i_type, node->i_mode);
-    printk("file: name:%s, type:%x, mode:%x \n", f->f_name, f->f_type, f->f_mode);
-    return 0
+    printk("inode name:%s, size:%d, type:%x, mode;%x \n", "unknown", node->i_size, 0xFF, node->i_mode);
+    //  printk("file: name:%s, type:%x, mode:%x \n", "no name", f->f_type, f->f_mode);
+    return 0;
 }
 
 static const struct proc_ops lll_proc_fops = {
