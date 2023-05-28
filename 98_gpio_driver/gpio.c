@@ -2,7 +2,7 @@
 
 #include "gpio.h"
 
-unsigned int *gpio;
+volatile unsigned int *gpio;
 
 void gpio_init(unsigned int *gpio_base_addr)
 {
