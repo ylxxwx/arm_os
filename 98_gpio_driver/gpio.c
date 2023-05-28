@@ -25,19 +25,13 @@ void Pull_up(unsigned int pin)
     printk("%p, %d\n", gpio, pin);
     GPIO_PULL = 2;
     printk("set GPIO_PULL %p, %d\n", gpio, pin);
-    // short_sleep();
-    r = 150;
-    while (r--)
-        asm volatile("nop");
+    short_sleep();
     printk("after sleep %p, %d\n", gpio, pin);
     // clock on GPIO 24 & 25 (bit 24 & 25 set)
     unsigned int val = (1 << pin);
     gpio[GPIO_PULLCLK0_ADDR] = val; // 0x03000000;
     printk("PULL CLK %x \n", val, 1);
-    // short_sleep();
-    r = 150;
-    while (r--)
-        asm volatile("nop");
+    short_sleep();
     GPIO_PULL = 0;
     gpio[GPIO_PULLCLK0_ADDR] = 0;
 }

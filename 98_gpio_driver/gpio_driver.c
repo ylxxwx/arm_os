@@ -94,7 +94,8 @@ static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
         // Set the message in the device's buffer
         printk("In Port: %d, mode: %d\n", port, pull);
         INP_GPIO(port);
-        Pull_up(port);
+        // Pull_up(port);
+        Pull_down(port);
         // pull_mode(port, pull);
         break;
     case IOCTL_PORT_OUT:
