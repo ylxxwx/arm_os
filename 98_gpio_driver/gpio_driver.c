@@ -200,8 +200,8 @@ static int device_release(struct inode *inode, struct file *file)
 static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
 {
     unsigned int port = *offset;
-    unsigned char value = 0;
-    value = GET_GPIO(20);
+    // unsigned char value = 0;
+    int value = GET_GPIO(20);
     printk("read %d-%d\n", port, value);
     put_user(value, buffer);
     return 1;
