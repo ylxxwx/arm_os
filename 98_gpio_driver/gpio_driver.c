@@ -47,6 +47,7 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
     unsigned char value = 0;
     value = GET_GPIO(port);
     put_user(value, buffer);
+    printk("read %d-%d\n", port, value);
     return 1;
 }
 
