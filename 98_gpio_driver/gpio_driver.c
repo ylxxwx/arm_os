@@ -85,7 +85,7 @@ static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
         pull_mode(port, pull);
         break;
     case IOCTL_PORT_OUT:
-        pintk("Out Port: %d \n", port);
+        printk("Out Port: %d \n", port);
         OUT_GPIO(port);
         break;
 
@@ -105,7 +105,7 @@ static struct file_operations fops = {
     .release = device_release};
 
 struct class *my_class;
-
+int curr_dev;
 // Initialization function for the module
 static int __init my_gpio_init(void)
 {
@@ -128,8 +128,8 @@ static int __init my_gpio_init(void)
 
     // Initialize the character device structure
     cdev_init(&my_cdev, &fops);
-    int curr_dev = MKDEV(MAJOR(dev_num), MINOR(dev_num) + 1);
-    device_create(my_class, NULL, curr_dev, NULL, "my-gpio-%d", 1);
+    curr_dev = MKDEV(MAJOR(dev_num), MINOR(dev_num) + 1);
+    // device_create(my_class, NULL, curr_dev, NULL, "my-gpio-%d", 1);
     my_cdev.owner = THIS_MODULE;
     printk("cdev init, dev_num:%d\n", dev_num);
     // Add the character device to the system
@@ -152,6 +152,8 @@ static void __exit my_gpio_cleanup(void)
 
     // Release the device number
     unregister_chrdev_region(dev_num, 1);
+    // device_delete(my_class, NULL, curr_dev, NULL, "my-gpio-%d", 1);
+    device_destroy(my_class, curr_dev);
     class_destroy(my_class);
     printk(KERN_INFO "Unregistered char device\n");
 }
