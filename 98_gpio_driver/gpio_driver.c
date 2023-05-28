@@ -82,10 +82,11 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
 static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
     int ret = 0;
-    PortInit *init = (PortInit *)arg;
-    unsigned int port = init->port;
-    unsigned int dir = init->dir;
-    unsigned int pull = init->mode;
+    PortInit init = (PortInit *)arg;
+
+    ret = copy_from_user(&init, arg, sizeof(init)) unsigned int port = init.port;
+    unsigned int dir = init.dir;
+    unsigned int pull = init.mode;
 
     switch (cmd)
     {
