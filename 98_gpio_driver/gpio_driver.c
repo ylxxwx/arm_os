@@ -84,7 +84,8 @@ static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
     int ret = 0;
     PortInit init = (PortInit *)arg;
 
-    ret = copy_from_user(&init, arg, sizeof(init)) unsigned int port = init.port;
+    ret = copy_from_user(&init, arg, sizeof(init));
+    unsigned int port = init.port;
     unsigned int dir = init.dir;
     unsigned int pull = init.mode;
 
