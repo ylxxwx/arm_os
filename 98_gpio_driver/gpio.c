@@ -21,17 +21,25 @@ static void short_sleep(void)
 
 void Pull_up(unsigned int pin)
 {
+    int r = 150;
     printk("%p, %d\n", gpio, pin);
     GPIO_PULL = 2;
     printk("set GPIO_PULL %p, %d\n", gpio, pin);
-    short_sleep();
+    // short_sleep();
+    r = 150;
+    while (r--)
+        asm volatile("nop");
     printk("after sleep %p, %d\n", gpio, pin);
     // clock on GPIO 24 & 25 (bit 24 & 25 set)
-    gpio[38] = (1 << pin); // 0x03000000;
-    printk("PULL CLK %x, \n", 1 << pin);
-    short_sleep();
+    unsigned int val = (1 << pin);
+    gpio[GPIO_PULLCLK0_ADDR] = val; // 0x03000000;
+    printk("PULL CLK %x \n", val, 1);
+    // short_sleep();
+    r = 150;
+    while (r--)
+        asm volatile("nop");
     GPIO_PULL = 0;
-    gpio[38] = 0;
+    gpio[GPIO_PULLCLK0_ADDR] = 0;
 }
 
 void Pull_down(unsigned int pin)

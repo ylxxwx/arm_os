@@ -63,6 +63,8 @@ extern unsigned int *gpio;
 #define GPIO_PULL *(gpio + 37)     // Pull up/pull down
 #define GPIO_PULLCLK0 *(gpio + 38) // Pull up/pull down clock
 
+#define GPIO_PULLCLK0_ADDR 38
+
 void gpio_init(unsigned int *);
 void pull_mode(unsigned int pin, int mode);
 void Pull_up(unsigned int pin);
