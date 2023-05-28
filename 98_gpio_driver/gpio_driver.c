@@ -124,14 +124,15 @@ static int __init my_gpio_init(void)
     // Initialize the character device structure
     cdev_init(&my_cdev, &fops);
     my_cdev.owner = THIS_MODULE;
-
+    printk("cdev init, dev_num:%d\n", dev_num);
     // Add the character device to the system
-    if (cdev_add(&my_cdev, dev_num, 1) < 0)
+    if (cdev_add(&my_cdev, dev_num, 1) != 0)
     {
         printk(KERN_ALERT "Failed to add character device\n");
         unregister_chrdev_region(dev_num, 1);
         return -1;
     }
+    printk("cdev add OK, dev_num:%d\n", dev_num);
     return 0;
 }
 
