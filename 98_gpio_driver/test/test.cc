@@ -27,11 +27,11 @@ public:
 
     int PortRead()
     {
-        char buf[8];
+        char buf[1024];
         sprintf(buf, "%d", port);
         read(file, buf, 8);
         int value = 0;
-        scanf(buf, "%d", &value);
+        sscanf(buf, "%d", &value);
         return value;
     }
 

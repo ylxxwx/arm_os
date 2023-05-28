@@ -19,12 +19,12 @@ static unsigned int *gpio_registers = NULL;
 
 ssize_t lll_read(struct file *file, char __user *user, size_t size, loff_t *off)
 {
-    char buf[64];
+    char buf[128];
     if (copy_from_user(buf, user, 64))
         return 0;
     unsigned int port, value;
     sscanf(buf, "%d", &port);
-    printk("read %d\n", port);
+    printk("lll_read %d\n", port);
     value = GET_GPIO(port);
     sprintf(buf, "%d", value);
     copy_to_user(user, buf, sizeof(buf));
@@ -68,10 +68,11 @@ static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         {
             pr_err("Data Write : Err!\n");
         }
-        pr_info("Value = %u\n", value);
+        printk("Value = %u\n", value);
         OUT_GPIO(value);
         break;
     case OpenPortForRead: // Read
+    {
         unsigned int port, mode;
         if (copy_from_user(&port, (unsigned int *)arg, sizeof(port)))
         {
@@ -81,10 +82,11 @@ static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
         {
             pr_err("Data Read : Err!\n");
         }
-        pr_info("Open port(%d) for read(%d)\n", port, mode);
+        printk("Open port(%d) for read(%d)\n", port, mode);
         INP_GPIO(port);
         pull_mode(port, mode);
-        break;
+    }
+    break;
     case 3: // PortIn
         if (copy_to_user((int32_t *)arg, &value, sizeof(value)))
         {
