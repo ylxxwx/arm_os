@@ -242,14 +242,14 @@ static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
     case IOCTL_PORT_INP:
         // Set the message in the device's buffer
         printk("In Port: %d, mode: %d\n", port, pull);
-        // INP_GPIO(port);
-        //  Pull_up(port);
+        INP_GPIO(port);
+        Pull_up(port);
         // Pull_down(port);
         //  pull_mode(port, pull);
         break;
     case IOCTL_PORT_OUT:
         printk("Out Port: %d \n", port);
-        // OUT_GPIO(port);
+        OUT_GPIO(port);
         break;
 
     default:
@@ -283,9 +283,9 @@ static int __init my_gpio_init(void)
     printk("Base address: %p\n", gpio_registers);
     // gpio_init(gpio_registers);
     gpio = gpio_registers;
-    INP_GPIO(20);
-    OUT_GPIO(21);
-    Pull_up(20);
+    // INP_GPIO(20);
+    // OUT_GPIO(21);
+    // Pull_up(20);
 
     devno = MKDEV(major, minor);                          // 根据主设备号和次设备号合成设备号
     int rc = register_chrdev_region(devno, 1, "my-gpio"); // 向系统中注册设备号
