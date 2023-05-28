@@ -27,11 +27,11 @@ void Pull_up(unsigned int pin)
     short_sleep();
     printk("after sleep %p, %d\n", gpio, pin);
     // clock on GPIO 24 & 25 (bit 24 & 25 set)
-    GPIO_PULLCLK0 = (1 << pin); // 0x03000000;
+    *(gpio + 38) = (1 << pin); // 0x03000000;
     printk("PULL CLK %x, \n", 1 << pin);
     short_sleep();
     GPIO_PULL = 0;
-    GPIO_PULLCLK0 = 0;
+    *(gpio + 38) = 0;
 }
 
 void Pull_down(unsigned int pin)
