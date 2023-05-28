@@ -12,9 +12,16 @@
 #define DEVICE_NAME "mygpio"
 #define BUF_LEN 1024
 
+typedef struct tagPortIn
+{
+    unsigned int port;
+    unsigned int dir;
+    unsigned int mode;
+} PortInit;
+
 // Define custom ioctl commands
-#define IOCTL_PORT_INP _IOW(1, 1, char *)
-#define IOCTL_PORT_OUT _IOW(2, 2, char *)
+#define IOCTL_PORT_INP _IOW(1, 1, PortInit *)
+#define IOCTL_PORT_OUT _IOW(2, 2, PortInit *)
 
 static int major = 50; // Major number assigned to our device driver
 static int minor = 0;  // Minor number assigned to our device driver
@@ -75,11 +82,10 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
 static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
     int ret = 0;
-
-    unsigned int *ioctl_msg = (unsigned int *)arg;
-    unsigned int port = ioctl_msg[0];
-    unsigned int dir = ioctl_msg[1];
-    unsigned int pull = ioctl_msg[2];
+    PortInit *init = (PortInit *)arg;
+    unsigned int port = init->port;
+    unsigned int dir = init->dir;
+    unsigned int pull = init->mode;
 
     switch (cmd)
     {

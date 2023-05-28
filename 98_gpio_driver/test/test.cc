@@ -5,8 +5,16 @@
 #include <unistd.h>
 #include <sys/ioctl.h> /* ioctl */
 
-#define IOCTL_PORT_INP _IOW(1, 1, char *)
-#define IOCTL_PORT_OUT _IOW(2, 2, char *)
+typedef struct tagPortIn
+{
+    unsigned int port;
+    unsigned int dir;
+    unsigned int mode;
+} PortInit;
+
+// Define custom ioctl commands
+#define IOCTL_PORT_INP _IOW(1, 1, PortInit *)
+#define IOCTL_PORT_OUT _IOW(2, 2, PortInit *)
 
 class PortGPIO
 {
@@ -24,12 +32,12 @@ public:
     };
     PortGPIO(int file, int port, Direction dir, Mode mode) : file(file), port(port)
     {
-        unsigned int params[2] = {port, mode};
-        printf("Port %d, Dir: %d, mode: %d\n", port, dir, mode);
+        PortInit init = {port, dir, mode};
+        printf("Port %d, Dir: %d, mode: %x\n", port, dir, mode);
         if (dir == Direction::Input)
-            ioctl(file, IOCTL_PORT_INP, params);
+            ioctl(file, IOCTL_PORT_INP, &init);
         else
-            ioctl(file, IOCTL_PORT_OUT, params);
+            ioctl(file, IOCTL_PORT_OUT, &init);
     }
 
     int PortRead()
