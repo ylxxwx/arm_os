@@ -55,7 +55,7 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 {
     unsigned int port = *offset;
     unsigned char value = 0;
-    // value = GET_GPIO(port);
+    value = GET_GPIO(port);
     put_user(value, buffer);
     printk("read %d-%d\n", port, value);
     return 1;
@@ -70,10 +70,10 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
 
     printk("write %d-%d\n", port, value);
 
-    // if (value)
-    //     SET_GPIO(port);
-    // else
-    //     CLR_GPIO(port);
+    if (value)
+        SET_GPIO(port);
+    else
+        CLR_GPIO(port);
 
     return 1;
 }
