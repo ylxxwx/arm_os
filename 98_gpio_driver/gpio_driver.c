@@ -130,6 +130,7 @@ static int __init my_gpio_init(void)
         printk("Failed to map GPIO memory to driver\n");
         return -1;
     }
+    printk("Base address: %x\n", gpio_registers);
     gpio_init(gpio_registers);
 
     devno = MKDEV(major, minor);                          // 根据主设备号和次设备号合成设备号
