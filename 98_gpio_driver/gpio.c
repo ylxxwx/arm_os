@@ -21,11 +21,11 @@ static void short_sleep(void)
 
 void Pull_up(unsigned int pin)
 {
-    printk("%p, %p,\n", gpio, gpio);
+    printk("%p, %d\n", gpio, pin);
     GPIO_PULL = 2;
     short_sleep();
     // clock on GPIO 24 & 25 (bit 24 & 25 set)
-    GPIO_PULLCLK0 = 1 << pin; // 0x03000000;
+    GPIO_PULLCLK0 = (1 << pin); // 0x03000000;
     short_sleep();
     GPIO_PULL = 0;
     GPIO_PULLCLK0 = 0;
