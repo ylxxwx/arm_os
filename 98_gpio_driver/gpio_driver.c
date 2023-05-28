@@ -201,7 +201,7 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 {
     unsigned int port = *offset;
     unsigned char value = 0;
-    value = GET_GPIO(port);
+    value = GET_GPIO(20);
     printk("read %d-%d\n", port, value);
     put_user(value, buffer);
     return 1;
