@@ -30,11 +30,6 @@ static int minor = 0;  // Minor number assigned to our device driver
 static dev_t devno;
 static struct cdev my_cdev; // Character device structure
 
-static char msg[BUF_LEN]; // Buffer to store data written to the device
-static int msg_len;       // Length of the message stored in the buffer
-static dev_t dev_num;     // Device number
-#define LLL_MAX_USER_SIZE 1024
-
 static unsigned int *gpio_registers = NULL;
 
 #define OpenPortForWrite 1
@@ -69,7 +64,6 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 // Function called when data is written to the device
 static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
 {
-    int bytes_written = 0;
     unsigned int port = *offset;
     unsigned char value = *buffer;
 
@@ -87,11 +81,11 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
 static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
     int ret = 0;
+    unsigned int port, pull;
     PortInit init;
-    ret = copy_from_user(&init, arg, sizeof(init));
-    unsigned int port = init.port;
-    unsigned int dir = init.dir;
-    unsigned int pull = init.mode;
+    ret = copy_from_user(&init, (const void __user *)arg, sizeof(init));
+    port = init.port;
+    pull = init.mode;
 
     switch (cmd)
     {
@@ -129,6 +123,7 @@ int curr_dev;
 // Initialization function for the module
 static int __init my_gpio_init(void)
 {
+    int rc;
     // Register the character device
     unsigned int *gpio_registers = (unsigned int *)ioremap(BCM2837_GPIO_ADDRESS, PAGE_SIZE);
     if (gpio_registers == NULL)
@@ -139,12 +134,9 @@ static int __init my_gpio_init(void)
     printk("Base address: %p\n", gpio_registers);
     // gpio_init(gpio_registers);
     gpio = gpio_registers;
-    // INP_GPIO(20);
-    // OUT_GPIO(21);
-    // Pull_up(20);
 
-    devno = MKDEV(major, minor);                          // 根据主设备号和次设备号合成设备号
-    int rc = register_chrdev_region(devno, 1, "my-gpio"); // 向系统中注册设备号
+    devno = MKDEV(major, minor);                      // 根据主设备号和次设备号合成设备号
+    rc = register_chrdev_region(devno, 1, "my-gpio"); // 向系统中注册设备号
     if (rc < 0)
     {
         printk("register_chrdev_region failed!");
