@@ -94,12 +94,12 @@ static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
     case IOCTL_PORT_INP:
         // Set the message in the device's buffer
         printk("In Port: %d, mode: %d\n", port, pull);
-        // INP_GPIO(port);
-        // pull_mode(port, pull);
+        INP_GPIO(port);
+        pull_mode(port, pull);
         break;
     case IOCTL_PORT_OUT:
         printk("Out Port: %d \n", port);
-        // OUT_GPIO(port);
+        OUT_GPIO(port);
         break;
 
     default:
