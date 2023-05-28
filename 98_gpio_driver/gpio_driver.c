@@ -95,6 +95,7 @@ static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
         break;
 
     default:
+        printk("Unknown IOCTL %d\n", cmd);
         return -ENOTTY; // Invalid ioctl command
     }
 
