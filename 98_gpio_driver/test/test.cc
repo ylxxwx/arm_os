@@ -16,8 +16,8 @@ public:
     };
     enum Direction
     {
-        Output = 1,
-        Input = 2,
+        Input = 1,
+        Output = 2,
     };
     PortGPIO(int file, int port, Direction dir, Mode mode) : file(file), port(port)
     {
@@ -27,19 +27,16 @@ public:
 
     int PortRead()
     {
-        char buf[1024];
-        sprintf(buf, "%d", port);
-        read(file, buf, 8);
-        int value = 0;
-        sscanf(buf, "%d", &value);
+        char buf;
+        pread(file, &buf, 1, port);
+        int value = (int)buf;
         return value;
     }
 
     int PortWrite(int value)
     {
-        char buf[16];
-        sprintf(buf, "%d-%d", port, value);
-        write(file, buf, 16);
+        char buf = (char)value;
+        pwrite(file, &buf, 1, port);
         return 0;
     }
 
@@ -50,7 +47,7 @@ private:
 
 int main()
 {
-    int f = open("/proc/my-gpio", O_RDWR);
+    int f = open("/dev/mygpio", O_RDWR);
 
     PortGPIO inPort(f, 20, PortGPIO::Input, PortGPIO::PullDown);
     PortGPIO outPort(f, 21, PortGPIO::Output, PortGPIO::PullDisable);

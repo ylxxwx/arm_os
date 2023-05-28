@@ -2,120 +2,109 @@
 #include <linux/init.h>
 #include <linux/module.h>
 
-#include <linux/proc_fs.h>
-#include <linux/slab.h>
-
 #include <asm/io.h>
 
+#include <linux/fs.h>
+#include <linux/uaccess.h>
+#include <linux/ioctl.h>
 #include "gpio.h"
+
+#define DEVICE_NAME "mygpio"
+#define BUF_LEN 1024
+
+// Define custom ioctl commands
+#define IOCTL_PORT_INP _IOW(0, 1, char *)
+#define IOCTL_PORT_OUT _IOW(0, 2, char *)
+
+static int Major;         // Major number assigned to our device driver
+static char msg[BUF_LEN]; // Buffer to store data written to the device
+static int msg_len;       // Length of the message stored in the buffer
 
 #define LLL_MAX_USER_SIZE 1024
 
-static struct proc_dir_entry *lll_proc;
-
-static char data_buffer[LLL_MAX_USER_SIZE + 1] = {0};
-
 static unsigned int *gpio_registers = NULL;
 
-ssize_t lll_read(struct file *file, char __user *user, size_t size, loff_t *off)
+#define OpenPortForWrite 1
+#define OpenPortForRead 2
+
+// Function called when the device is opened
+static int device_open(struct inode *inode, struct file *file)
 {
-    char buf[128];
-    if (copy_from_user(buf, user, 64))
-        return 0;
-    unsigned int port, value;
-    sscanf(buf, "%d", &port);
-    printk("lll_read %d\n", port);
-    value = GET_GPIO(port);
-    sprintf(buf, "%d", value);
-    copy_to_user(user, buf, sizeof(buf));
-    return 0;
-    return sizeof(buf);
+    return 0; // Nothing to do here for now
 }
 
-ssize_t lll_write(struct file *file, const char __user *user, size_t size, loff_t *off)
+// Function called when the device is closed
+static int device_release(struct inode *inode, struct file *file)
 {
-    char buf[64];
-    if (copy_from_user(buf, user, 64))
-        return 0;
-    unsigned int port, value;
-    sscanf(buf, "%d-%d", &port, &value);
+    return 0; // Nothing to do here for now
+}
+
+// Function called when data is read from the device
+static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
+{
+    unsigned int port = *offset;
+    unsigned char value = 0;
+    value = GET_GPIO(port);
+    put_user(value, buffer);
+    return 1;
+}
+
+// Function called when data is written to the device
+static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
+{
+    int bytes_written = 0;
+    unsigned int port = *offset;
+    unsigned char value = *buffer;
+
     printk("write %d-%d\n", port, value);
     if (value)
         SET_GPIO(port);
     else
         CLR_GPIO(port);
 
-    return 0;
+    return 1;
 }
 
-static int lll_open(struct inode *node, struct file *f)
+// Function called when ioctl command is invoked
+static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-    printk("inode name:%s, size:%d, type:%x, mode;%x \n", "node->name", node->i_size, 0xFF, node->i_mode);
-    printk("file: name:%s, type:%x, mode:%x \n", "no name", 0xFF, f->f_mode);
-    return 0;
-}
+    int ret = 0;
 
-#define OpenPortForWrite 1
-#define OpenPortForRead 2
+    unsigned int *ioctl_msg = (unsigned int *)arg;
+    unsigned int port = ioctl_msg[0];
+    unsigned int dir = ioctl_msg[1];
+    unsigned int pull = ioctl_msg[2];
 
-static long etx_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-{
-    unsigned int value;
     switch (cmd)
     {
-    case OpenPortForWrite: // Write
-        if (copy_from_user(&value, (unsigned int *)arg, sizeof(value)))
-        {
-            pr_err("Data Write : Err!\n");
-        }
-        printk("Value = %u\n", value);
-        OUT_GPIO(value);
-        break;
-    case OpenPortForRead: // Read
-    {
-        unsigned int port, mode;
-        if (copy_from_user(&port, (unsigned int *)arg, sizeof(port)))
-        {
-            pr_err("Data Read : Err!\n");
-        }
-        if (copy_from_user(&mode, (unsigned int *)(arg + 4), sizeof(mode)))
-        {
-            pr_err("Data Read : Err!\n");
-        }
-        printk("Open port(%d) for read(%d)\n", port, mode);
+    case IOCTL_PORT_INP:
+        // Set the message in the device's buffer
         INP_GPIO(port);
-        pull_mode(port, mode);
-    }
-    break;
-    case 3: // PortIn
-        if (copy_to_user((int32_t *)arg, &value, sizeof(value)))
-        {
-            pr_err("Data Read : Err!\n");
-        }
+        pull_mode(port, pull);
         break;
-    case 4: // PortOut
-        if (copy_to_user((int32_t *)arg, &value, sizeof(value)))
-        {
-            pr_err("Data Read : Err!\n");
-        }
+    case IOCTL_PORT_OUT:
+        OUT_GPIO(port);
         break;
+
     default:
-        pr_info("Default\n");
-        break;
+        return -ENOTTY; // Invalid ioctl command
     }
+
     return 0;
 }
 
-static const struct proc_ops lll_proc_fops = {
-    .proc_read = lll_read,
-    .proc_write = lll_write,
-    .proc_open = lll_open,
-    .proc_ioctl = etx_ioctl,
-};
+// File operations structure for our device driver
+static struct file_operations fops = {
+    .read = device_read,
+    .write = device_write,
+    .unlocked_ioctl = device_ioctl, // Use unlocked_ioctl for newer kernel versions
+    .open = device_open,
+    .release = device_release};
 
-static int __init gpio_driver_init(void)
+// Initialization function for the module
+static int __init my_gpio_init(void)
 {
-
+    // Register the character device
     unsigned int *gpio_registers = (unsigned int *)ioremap(BCM2837_GPIO_ADDRESS, PAGE_SIZE);
     if (gpio_registers == NULL)
     {
@@ -124,30 +113,29 @@ static int __init gpio_driver_init(void)
     }
     gpio_init(gpio_registers);
 
-    printk("Successfully mapped in GPIO memory\n");
-
-    // create an entry in the proc-fs
-    lll_proc = proc_create("my-gpio", 0666, NULL, &lll_proc_fops);
-    if (lll_proc == NULL)
+    Major = register_chrdev(0, DEVICE_NAME, &fops);
+    if (Major < 0)
     {
-        return -1;
+        printk(KERN_ALERT "Failed to register char device: %d\n", Major);
+        return Major;
     }
 
+    printk(KERN_INFO "Registered char device with major number %d\n", Major);
     return 0;
 }
 
-static void __exit gpio_driver_exit(void)
+// Cleanup function for the module
+static void __exit my_gpio_cleanup(void)
 {
-    printk("Leaving my driver!\n");
+    // Unregister the character device
+    unregister_chrdev(Major, DEVICE_NAME);
     iounmap(gpio_registers);
-    proc_remove(lll_proc);
-    return;
+    printk(KERN_INFO "Unregistered char device\n");
 }
 
-module_init(gpio_driver_init);
-module_exit(gpio_driver_exit);
+module_init(my_gpio_init);
+module_exit(my_gpio_cleanup);
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Driver Study");
-MODULE_DESCRIPTION("Test of writing drivers for RASPI");
-MODULE_VERSION("1.0");
+MODULE_AUTHOR("Liping LIU");
+MODULE_DESCRIPTION("GPIO Driver Example");
