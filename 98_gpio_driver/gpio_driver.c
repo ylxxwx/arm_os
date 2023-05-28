@@ -13,8 +13,8 @@
 #define BUF_LEN 1024
 
 // Define custom ioctl commands
-#define IOCTL_PORT_INP _IOW(0, 1, char *)
-#define IOCTL_PORT_OUT _IOW(0, 2, char *)
+#define IOCTL_PORT_INP _IOW(1, 1, char *)
+#define IOCTL_PORT_OUT _IOW(2, 2, char *)
 
 static int major = 50; // Major number assigned to our device driver
 static int minor = 0;  // Minor number assigned to our device driver
