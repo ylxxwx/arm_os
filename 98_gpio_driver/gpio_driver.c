@@ -1,7 +1,7 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/module.h>
-
+#include <linux/cdev.h>
 #include <asm/io.h>
 
 #include <linux/fs.h>
@@ -16,10 +16,11 @@
 #define IOCTL_PORT_INP _IOW(0, 1, char *)
 #define IOCTL_PORT_OUT _IOW(0, 2, char *)
 
-static int Major;         // Major number assigned to our device driver
-static char msg[BUF_LEN]; // Buffer to store data written to the device
-static int msg_len;       // Length of the message stored in the buffer
-
+static int Major;           // Major number assigned to our device driver
+static char msg[BUF_LEN];   // Buffer to store data written to the device
+static int msg_len;         // Length of the message stored in the buffer
+static dev_t dev_num;       // Device number
+static struct cdev my_cdev; // Character device structure
 #define LLL_MAX_USER_SIZE 1024
 
 static unsigned int *gpio_registers = NULL;
@@ -113,14 +114,24 @@ static int __init my_gpio_init(void)
     }
     gpio_init(gpio_registers);
 
-    Major = register_chrdev(0, DEVICE_NAME, &fops);
-    if (Major < 0)
+    // Allocate a device number
+    if (alloc_chrdev_region(&dev_num, 0, 1, DEVICE_NAME) < 0)
     {
-        printk(KERN_ALERT "Failed to register char device: %d\n", Major);
-        return Major;
+        printk(KERN_ALERT "Failed to allocate device number\n");
+        return -1;
     }
 
-    printk(KERN_INFO "Registered char device with major number %d\n", Major);
+    // Initialize the character device structure
+    cdev_init(&my_cdev, &fops);
+    my_cdev.owner = THIS_MODULE;
+
+    // Add the character device to the system
+    if (cdev_add(&my_cdev, dev_num, 1) < 0)
+    {
+        printk(KERN_ALERT "Failed to add character device\n");
+        unregister_chrdev_region(dev_num, 1);
+        return -1;
+    }
     return 0;
 }
 
@@ -128,8 +139,11 @@ static int __init my_gpio_init(void)
 static void __exit my_gpio_cleanup(void)
 {
     // Unregister the character device
-    unregister_chrdev(Major, DEVICE_NAME);
     iounmap(gpio_registers);
+    cdev_del(&my_cdev);
+
+    // Release the device number
+    unregister_chrdev_region(dev_num, 1);
     printk(KERN_INFO "Unregistered char device\n");
 }
 
