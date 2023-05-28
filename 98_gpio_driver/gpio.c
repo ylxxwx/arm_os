@@ -4,7 +4,7 @@ unsigned int *gpio = 0;
 
 void gpio_init(unsigned int *gpio_base_addr)
 {
-    gpio = (unsigned int *)BCM2837_GPIO_ADDRESS;
+    gpio = (unsigned int *)gpio_base_addr;
 }
 
 static void short_sleep(void)
