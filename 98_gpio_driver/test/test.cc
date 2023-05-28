@@ -32,7 +32,7 @@ public:
     };
     PortGPIO(int file, int port, Direction dir, Mode mode) : file(file), port(port)
     {
-        PortInit init = {port, dir, mode};
+        PortInit init = {(unsigned int)port, dir, mode};
         printf("Port %d, Dir: %d, mode: %x\n", port, dir, mode);
         if (dir == Direction::Input)
             ioctl(file, IOCTL_PORT_INP, &init);
