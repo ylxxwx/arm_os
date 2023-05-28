@@ -285,7 +285,7 @@ static int __init my_gpio_init(void)
     gpio = gpio_registers;
     INP_GPIO(20);
     OUT_GPIO(21);
-    Pull_down(20);
+    Pull_up(20);
 
     devno = MKDEV(major, minor);                          // 根据主设备号和次设备号合成设备号
     int rc = register_chrdev_region(devno, 1, "my-gpio"); // 向系统中注册设备号
