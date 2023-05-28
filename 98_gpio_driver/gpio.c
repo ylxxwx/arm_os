@@ -7,6 +7,7 @@ unsigned int *gpio;
 void gpio_init(unsigned int *gpio_base_addr)
 {
     gpio = (unsigned int *)gpio_base_addr;
+    printk("gpio:%p\n", gpio);
 }
 
 static void short_sleep(void)
@@ -20,7 +21,7 @@ static void short_sleep(void)
 
 void Pull_up(unsigned int pin)
 {
-    printk("%p, %p,\n", GPIO_PULL, GPIO_PULLCLK0);
+    printk("%p, %p,\n", gpio, gpio);
     GPIO_PULL = 2;
     short_sleep();
     // clock on GPIO 24 & 25 (bit 24 & 25 set)
