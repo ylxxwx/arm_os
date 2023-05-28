@@ -126,16 +126,17 @@ static int __init my_gpio_init(void)
     int rc = register_chrdev_region(devno, 1, "my-gpio"); // 向系统中注册设备号
     if (rc < 0)
     {
-        pr_err("register_chrdev_region failed!");
+        printk("register_chrdev_region failed!");
         return rc;
     }
     cdev_init(&my_cdev, &fops);        // 初始化字符设备结构体
     rc = cdev_add(&my_cdev, devno, 1); // 将字符设备结构体加入系统中
     if (rc < 0)
     {
-        pr_err("cdev_add failed!");
+        printk("cdev_add failed!");
         return rc;
     }
+    printk("dev init success");
     return 0;
 }
 

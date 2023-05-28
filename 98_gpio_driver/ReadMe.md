@@ -1,1 +1,1 @@
-mknode /dev/mygpio c 50 0
+mknod /dev/mygpio c 50 0
