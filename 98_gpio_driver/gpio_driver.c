@@ -102,6 +102,8 @@ static struct file_operations fops = {
     .open = device_open,
     .release = device_release};
 
+struct class *my_class;
+
 // Initialization function for the module
 static int __init my_gpio_init(void)
 {
@@ -120,13 +122,16 @@ static int __init my_gpio_init(void)
         printk(KERN_ALERT "Failed to allocate device number\n");
         return -1;
     }
+    my_class = class_create(THIS_MODULE, "my_gpio");
 
     // Initialize the character device structure
     cdev_init(&my_cdev, &fops);
+    int curr_dev = MKDEV(MAJOR(dev_num), MINOR(dev_num) + 1);
+    device_create(my_class, NULL, curr_dev, NULL, "my-gpio-%d", 1);
     my_cdev.owner = THIS_MODULE;
     printk("cdev init, dev_num:%d\n", dev_num);
     // Add the character device to the system
-    if (cdev_add(&my_cdev, dev_num, 1) != 0)
+    if (cdev_add(&my_cdev, curr_dev, 1) != 0)
     {
         printk(KERN_ALERT "Failed to add character device\n");
         unregister_chrdev_region(dev_num, 1);
