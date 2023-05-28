@@ -44,7 +44,7 @@
 #define GPIO_GPPUDCLK0 38
 #define GPIO_GPPUDCLK1 39
 
-extern unsigned int *gpio;
+extern volatile unsigned int *gpio;
 
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x) or SET_GPIO_ALT(x,y)
 #define INP_GPIO(g) *(gpio + ((g) / 10)) &= ~(7 << (((g) % 10) * 3))
