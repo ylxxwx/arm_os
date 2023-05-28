@@ -80,10 +80,12 @@ static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
     {
     case IOCTL_PORT_INP:
         // Set the message in the device's buffer
+        printk("In Port: %d, mode: %d\n", port, pull);
         INP_GPIO(port);
         pull_mode(port, pull);
         break;
     case IOCTL_PORT_OUT:
+        pintk("Out Port: %d \n", port);
         OUT_GPIO(port);
         break;
 
@@ -150,6 +152,7 @@ static void __exit my_gpio_cleanup(void)
 
     // Release the device number
     unregister_chrdev_region(dev_num, 1);
+    class_destroy(my_class);
     printk(KERN_INFO "Unregistered char device\n");
 }
 

@@ -22,20 +22,24 @@ public:
     PortGPIO(int file, int port, Direction dir, Mode mode) : file(file), port(port)
     {
         unsigned int params[2] = {port, mode};
+        printf("Port %d, Dir: %d, mode: %d\n", port, dir, mode);
         ioctl(file, dir, params);
     }
 
     int PortRead()
     {
         char buf;
+        printf("Port Read:%d \n", port);
         pread(file, &buf, 1, port);
         int value = (int)buf;
+        printf("Port Read:%d val:%d \n", port, value);
         return value;
     }
 
     int PortWrite(int value)
     {
         char buf = (char)value;
+        printf("Port Write:%d val:%d \n", port, value);
         pwrite(file, &buf, 1, port);
         return 0;
     }
