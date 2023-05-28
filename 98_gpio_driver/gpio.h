@@ -68,3 +68,4 @@ extern volatile unsigned int *gpio;
 void gpio_init(unsigned int *);
 void pull_mode(unsigned int pin, int mode);
 void Pull_up(unsigned int pin);
+void Pull_down(unsigned int pin);
