@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include <sys/ioctl.h> /* ioctl */
 
+#define IOCTL_PORT_INP _IOW(1, 1, char *)
+#define IOCTL_PORT_OUT _IOW(2, 2, char *)
+
 class PortGPIO
 {
 public:
@@ -23,7 +26,10 @@ public:
     {
         unsigned int params[2] = {port, mode};
         printf("Port %d, Dir: %d, mode: %d\n", port, dir, mode);
-        ioctl(file, dir, params);
+        if (dir == Direction::Input)
+            ioctl(file, IOCTL_PORT_INP, params);
+        else
+            ioctl(file, IOCTL_PORT_OUT, params);
     }
 
     int PortRead()
