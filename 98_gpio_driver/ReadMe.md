@@ -1,0 +1,1 @@
+mknode /dev/mygpio c 50 0

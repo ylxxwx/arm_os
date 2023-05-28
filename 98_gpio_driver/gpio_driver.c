@@ -16,11 +16,14 @@
 #define IOCTL_PORT_INP _IOW(0, 1, char *)
 #define IOCTL_PORT_OUT _IOW(0, 2, char *)
 
-static int Major;           // Major number assigned to our device driver
-static char msg[BUF_LEN];   // Buffer to store data written to the device
-static int msg_len;         // Length of the message stored in the buffer
-static dev_t dev_num;       // Device number
+static int major = 50; // Major number assigned to our device driver
+static int minor = 0;  // Minor number assigned to our device driver
+static dev_t devno;
 static struct cdev my_cdev; // Character device structure
+
+static char msg[BUF_LEN]; // Buffer to store data written to the device
+static int msg_len;       // Length of the message stored in the buffer
+static dev_t dev_num;     // Device number
 #define LLL_MAX_USER_SIZE 1024
 
 static unsigned int *gpio_registers = NULL;
@@ -119,28 +122,20 @@ static int __init my_gpio_init(void)
     }
     gpio_init(gpio_registers);
 
-    // Allocate a device number
-    if (alloc_chrdev_region(&dev_num, 0, 1, DEVICE_NAME) < 0)
+    devno = MKDEV(major, minor);                          // 根据主设备号和次设备号合成设备号
+    int rc = register_chrdev_region(devno, 1, "my-gpio"); // 向系统中注册设备号
+    if (rc < 0)
     {
-        printk(KERN_ALERT "Failed to allocate device number\n");
-        return -1;
+        pr_err("register_chrdev_region failed!");
+        return rc;
     }
-    my_class = class_create(THIS_MODULE, "my_gpio");
-
-    // Initialize the character device structure
-    cdev_init(&my_cdev, &fops);
-    curr_dev = MKDEV(MAJOR(dev_num), MINOR(dev_num) + 1);
-    // device_create(my_class, NULL, curr_dev, NULL, "my-gpio-%d", 1);
-    my_cdev.owner = THIS_MODULE;
-    printk("cdev init, dev_num:%d\n", dev_num);
-    // Add the character device to the system
-    if (cdev_add(&my_cdev, curr_dev, 1) != 0)
+    cdev_init(&my_cdev, &fops);        // 初始化字符设备结构体
+    rc = cdev_add(&my_cdev, devno, 1); // 将字符设备结构体加入系统中
+    if (rc < 0)
     {
-        printk(KERN_ALERT "Failed to add character device\n");
-        unregister_chrdev_region(dev_num, 1);
-        return -1;
+        pr_err("cdev_add failed!");
+        return rc;
     }
-    printk("cdev add OK, dev_num:%d\n", dev_num);
     return 0;
 }
 
@@ -150,13 +145,7 @@ static void __exit my_gpio_cleanup(void)
     // Unregister the character device
     iounmap(gpio_registers);
     cdev_del(&my_cdev);
-
-    // Release the device number
-    unregister_chrdev_region(dev_num, 1);
-    // device_delete(my_class, NULL, curr_dev, NULL, "my-gpio-%d", 1);
-    device_destroy(my_class, curr_dev);
-    class_destroy(my_class);
-    printk(KERN_INFO "Unregistered char device\n");
+    unregister_chrdev_region(devno, 1); // 向系统中注销设备号    printk(KERN_INFO "Unregistered char device\n");
 }
 
 module_init(my_gpio_init);
