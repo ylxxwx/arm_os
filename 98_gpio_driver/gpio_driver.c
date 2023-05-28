@@ -55,7 +55,7 @@ static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_
 {
     unsigned int port = *offset;
     unsigned char value = 0;
-    // value = GET_GPIO(port);
+    value = GET_GPIO(port);
     put_user(value, buffer);
     printk("read %d-%d\n", port, value);
     return 1;
@@ -69,12 +69,12 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
     unsigned char value = *buffer;
 
     printk("write %d-%d\n", port, value);
-    /*
+
     if (value)
         SET_GPIO(port);
     else
         CLR_GPIO(port);
-    */
+
     return 1;
 }
 
@@ -93,12 +93,12 @@ static long device_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
     case IOCTL_PORT_INP:
         // Set the message in the device's buffer
         printk("In Port: %d, mode: %d\n", port, pull);
-        // INP_GPIO(port);
-        // pull_mode(port, pull);
+        INP_GPIO(port);
+        pull_mode(port, pull);
         break;
     case IOCTL_PORT_OUT:
         printk("Out Port: %d \n", port);
-        // OUT_GPIO(port);
+        OUT_GPIO(port);
         break;
 
     default:
