@@ -7,7 +7,7 @@ unsigned int *gpio;
 void gpio_init(unsigned int *gpio_base_addr)
 {
     gpio = (unsigned int *)gpio_base_addr;
-    printk("gpio:%p\n", gpio);
+    printk("gpio: %p\n", gpio);
 }
 
 static void short_sleep(void)
