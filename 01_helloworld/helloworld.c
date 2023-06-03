@@ -118,11 +118,13 @@ void main()
         {
             gpio_pin_on(21);
             light = 0;
+            uart_writeText("Light is on!\n\r");
         }
         else
         {
             gpio_pin_off(21);
             light = 1;
+            uart_writeText("Light is off!\n\r");
         }
         sleep(500000);
     }
