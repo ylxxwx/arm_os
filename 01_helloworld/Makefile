@@ -1,47 +1,48 @@
-OS = myos
-
-# tools
-AR = aarch64-linux-gnu-ar
-AS = aarch64-linux-gnu-as
+#
+# Copyright (C) 2018 bzt (bztsrc@github)
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation
+# files (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use, copy,
+# modify, merge, publish, distribute, sublicense, and/or sell copies
+# of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+# WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
+#
 CC = aarch64-linux-gnu-gcc
 LD = aarch64-linux-gnu-ld
-OBJCOPY = aarch64-linux-gnu-objcopy
-OBJDUMP = aarch64-linux-gnu-objdump
+OBJCP = aarch64-linux-gnu-objcopy
+SRCS = $(wildcard *.c)
+OBJS = $(SRCS:.c=.o)
+CFLAGS = -Wall -O2 -ffreestanding -nostdinc -nostdlib -nostartfiles
 
-CPU = cortex-a53
-ARCH_QEMU_FLAGS = -M virt -cpu cortex-a53 -m 256M
+all: clean kernel8.img
 
-# don't get pulseaudio related errors when qemu starts
-export QEMU_AUDIO_DRV = none
+start.o: start.S
+	$(CC) $(CFLAGS) -c start.S -o start.o
 
-# flags
-CFLAGS = -mcpu=$(CPU)   \
-         -std=c99 -pedantic -Wall -Wextra  -fPIC  \
-         -fno-builtin-printf -fno-builtin-strcpy -Wno-overlength-strings \
-         -fno-builtin-exit
-ASFLAGS = -mcpu=$(CPU) -g 
-QEMU_FLAGS = $(ARCH_QEMU_FLAGS) -nographic
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-all: $(OS).bin
-
-OBJS = start.o
-OBJS += helloworld.o uart_realmode.o
-
-
-$(OS).bin: $(OBJS) $(OS).ld 
-	$(LD) -T $(OS).ld $(OBJS) -o $(OS).elf
-	$(OBJCOPY) -O binary $(OS).elf $(OS).bin
-	$(OBJDUMP) -D $(OS).elf > $(OS).asm
-
-qemu: $(OS).bin 
-	qemu-system-aarch64 $(QEMU_FLAGS) -kernel $(OS).elf
-
-qemu2: $(OS).bin 
-	qemu-system-arm $(QEMU_FLAGS) -kernel $(OS).bin -serial vc:800x600 -serial mon:stdio
-
-qemu-gdb: $(OS).bin
-	qemu-system-arm $(QEMU_FLAGS) -gdb tcp::26000 -S -kernel $(OS).bin
+kernel8.img: start.o $(OBJS)
+	$(LD) -nostdlib start.o $(OBJS) -T myos.ld -o kernel8.elf
+	$(OBJCP) -O binary kernel8.elf kernel8.img
 
 clean:
-	rm -f $(OBJS) $(EXTRA_CLEAN)
-	rm -f $(OS).elf $(OS).bin $(OS).asm
+	rm kernel8.elf *.o >/dev/null 2>/dev/null || true
+
+run:
+	qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial mon:stdio
