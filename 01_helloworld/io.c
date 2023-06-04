@@ -5,9 +5,12 @@ enum
     // PERIPHERAL_BASE = 0xFE000000,
     PERIPHERAL_BASE = 0x3F000000,
     GPFSEL0 = PERIPHERAL_BASE + 0x200000,
+    GPLEV0 = PERIPHERAL_BASE + 0x200034,
     GPSET0 = PERIPHERAL_BASE + 0x20001C,
     GPCLR0 = PERIPHERAL_BASE + 0x200028,
-    GPPUPPDN0 = PERIPHERAL_BASE + 0x2000E4
+    GPPUPPDN0 = PERIPHERAL_BASE + 0x2000E4,
+    GPPUD = PERIPHERAL_BASE + 0x200094,     // Pi 3B
+    GPPUDCLK0 = PERIPHERAL_BASE + 0x200098, // Pi 3B
 };
 
 enum
@@ -51,10 +54,28 @@ unsigned int gpio_call(unsigned int pin_number, unsigned int value, unsigned int
 
 unsigned int gpio_set(unsigned int pin_number, unsigned int value) { return gpio_call(pin_number, value, GPSET0, 1, GPIO_MAX_PIN); }
 unsigned int gpio_clear(unsigned int pin_number, unsigned int value) { return gpio_call(pin_number, value, GPCLR0, 1, GPIO_MAX_PIN); }
-unsigned int gpio_pull(unsigned int pin_number, unsigned int value) { return gpio_call(pin_number, value, GPPUPPDN0, 2, GPIO_MAX_PIN); }
 unsigned int gpio_function(unsigned int pin_number, unsigned int value)
 {
     return gpio_call(pin_number, value, GPFSEL0, 3, GPIO_MAX_PIN);
+}
+
+void sleep(int r)
+{
+    while (r--)
+    {
+        ; // asm volatile("nop");
+    }
+}
+
+unsigned int gpio_pull(unsigned int pin_number, unsigned int value)
+{
+    mmio_write(GPPUD, value);
+    sleep(150);
+    mmio_write(GPPUDCLK0, 1 << pin_number);
+    sleep(150);
+    mmio_write(GPPUD, 0);
+    mmio_write(GPPUDCLK0, 0);
+    return 0;
 }
 
 void gpio_useAsAlt5(unsigned int pin_number)
@@ -71,6 +92,11 @@ void gpio_useAsInput(unsigned int pin_number)
 void gpio_useAsOutput(unsigned int pin_number)
 {
     gpio_function(pin_number, GPIO_FUNCTION_OUTPUT);
+}
+
+unsigned int gpio_read(unsigned int pin_number)
+{
+    return (mmio_read(GPLEV0) & (1 << pin_number));
 }
 
 // UART

@@ -90,7 +90,7 @@
 
 /** GPIO Register set */
 // extern unsigned int *gpio;
-
+/*
 // GPIO setup macros. Always use INP_GPIO(x) before using OUT_GPIO(x) or SET_GPIO_ALT(x,y)
 #define INP_GPIO(g) *(gpio + ((g) / 10)) &= ~(7 << (((g) % 10) * 3))
 #define OUT_GPIO(g) *(gpio + ((g) / 10)) |= (1 << (((g) % 10) * 3))
@@ -107,3 +107,4 @@
 
 #define GPIO_PULL *(gpio + 37)     // Pull up/pull down
 #define GPIO_PULLCLK0 *(gpio + 38) // Pull up/pull down clock
+*/

@@ -26,17 +26,12 @@
 #include "io.h"
 #include "gpio.h"
 
-void sleep(int r)
-{
-    while (r--)
-    {
-        ; // asm volatile("nop");
-    }
-}
-volatile unsigned int *gpio;
+// volatile unsigned int *gpio;
 
 void pull_up(unsigned int pin)
 {
+    gpio_pull(pin, 2);
+    /*
     GPIO_PULL = 2;
     sleep(150);
     // clock on GPIO 24 & 25 (bit 24 & 25 set)
@@ -44,10 +39,13 @@ void pull_up(unsigned int pin)
     sleep(150);
     GPIO_PULL = 0;
     GPIO_PULLCLK0 = 0;
+    */
 }
 
 void pull_down(unsigned int pin)
 {
+    gpio_pull(pin, 1);
+    /*
     GPIO_PULL = 1;
     sleep(150);
     // clock on GPIO 24 & 25 (bit 24 & 25 set)
@@ -55,10 +53,13 @@ void pull_down(unsigned int pin)
     sleep(150);
     GPIO_PULL = 0;
     GPIO_PULLCLK0 = 0;
+    */
 }
 
 void pull_disable(unsigned int pin)
 {
+    gpio_pull(pin, 0);
+    /*
     GPIO_PULL = 0;
     sleep(150);
     // clock on GPIO 24 & 25 (bit 24 & 25 set)
@@ -66,13 +67,14 @@ void pull_disable(unsigned int pin)
     sleep(150);
     GPIO_PULL = 0;
     GPIO_PULLCLK0 = 0;
+    */
 }
 
 void led_init()
 {
-    gpio = (unsigned int *)0x3f200000;
-    // INP_GPIO(20);
-    // OUT_GPIO(21);
+    // gpio = (unsigned int *)0x3f200000;
+    //  INP_GPIO(20);
+    //  OUT_GPIO(21);
     gpio_useAsInput(20);
     gpio_useAsOutput(21);
     // pull_up(20);
@@ -81,19 +83,22 @@ void led_init()
 
 static void gpio_pin_on(unsigned int pin)
 {
-    SET_GPIO(pin);
+    // SET_GPIO(pin);
+    gpio_set(pin, 1);
     return;
 }
 
 static void gpio_pin_off(unsigned int pin)
 {
-    CLR_GPIO(pin);
+    // CLR_GPIO(pin);
+    gpio_clear(pin);
     return;
 }
 
 static int gpio_pin_read(unsigned int pin)
 {
-    return GET_GPIO(pin);
+    return gpio_read(pin);
+    // return GET_GPIO(pin);
 }
 
 void main()
